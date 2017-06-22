@@ -17,7 +17,8 @@ public class DateTimePicker {
     private Date mMinDate;
     private Date mMaxDate;
     private FragmentManager mFragmentManager;
-    private DateTimePickerListener mListener;
+    private OnDateTimeSetListener mSetListener;
+    private OnDateTimeCancelListener mCancelListener;
 
     private DateTimePicker(FragmentManager fm) {
         FragmentTransaction ft = fm.beginTransaction();
@@ -29,8 +30,12 @@ public class DateTimePicker {
         mFragmentManager = fm;
     }
 
-    public void setListener(DateTimePickerListener listener) {
-        this.mListener = listener;
+    public void setSetListener(OnDateTimeSetListener listener) {
+        this.mSetListener = listener;
+    }
+
+    public void setCancelListener(OnDateTimeCancelListener listener) {
+        this.mCancelListener = listener;
     }
 
     public void setInitialDate(Date initialDate) {
@@ -46,8 +51,10 @@ public class DateTimePicker {
     }
 
     public void show() {
-        if (mListener == null)
-            throw new NullPointerException("Listener can not be null");
+        if (mSetListener == null)
+            throw new NullPointerException("SetListener can not be null");
+        if (mCancelListener == null)
+            throw new NullPointerException("CancelListener can not be null");
 
         if (mInitialDate == null) {
             setInitialDate(new Date());
@@ -68,7 +75,8 @@ public class DateTimePicker {
 
         DateTimeDialogFragment dateTimeDialogFragment =
                 DateTimeDialogFragment.newInstance(
-                        mListener,
+                        mSetListener,
+                        mCancelListener,
                         mInitialDate,
                         mMinDate,
                         mMaxDate
@@ -80,7 +88,8 @@ public class DateTimePicker {
 
     public static class Builder {
         private FragmentManager fm;
-        private DateTimePickerListener listener;
+        private OnDateTimeSetListener setListener;
+        private OnDateTimeCancelListener cancelListener;
 
         private Date initialDate;
         private Date minDate;
@@ -90,8 +99,13 @@ public class DateTimePicker {
             this.fm = fm;
         }
 
-        public Builder setListener(DateTimePickerListener listener) {
-            this.listener = listener;
+        public Builder setSetListener(OnDateTimeSetListener listener) {
+            this.setListener = listener;
+            return this;
+        }
+
+        public Builder setCancelListener(OnDateTimeCancelListener listener) {
+            this.cancelListener = listener;
             return this;
         }
 
@@ -112,7 +126,8 @@ public class DateTimePicker {
 
         public DateTimePicker build() {
             DateTimePicker picker = new DateTimePicker(fm);
-            picker.setListener(listener);
+            picker.setSetListener(setListener);
+            picker.setCancelListener(cancelListener);
             picker.setInitialDate(initialDate);
             picker.setMinDate(minDate);
             picker.setMinDate(maxDate);

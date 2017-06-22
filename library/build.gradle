@@ -3,10 +3,13 @@ plugins {
 }
 
 ext {
-    libraryVersion = "0.1.0"
+    libraryVersion = "0.2.0"
+    libraryName = 'datetimepicker'
+    libraryArtifact = 'datetimepicker'
+    libraryDesc = "Date time picker for android"
 
-    siteUrl = ""
-    gitUrl = ""
+    siteUrl = "https://github.com/gavinlin/DateTimePicker.git"
+    gitUrl = "https://github.com/gavinlin/DateTimePicker.git"
 
     developerId = "gavin"
     developerName = "gavin"
@@ -28,8 +31,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
+        versionCode 2
+        versionName "2.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -80,14 +83,14 @@ bintray {
 
     pkg {
         repo = 'android'
-        name = 'datetimepicker'
+        name = libraryName
         userOrg = 'gavinlinau'
         licenses = allLicenses
         vcsUrl = gitUrl
 
         version {
             name = libraryVersion
-            desc = "Date time picker for android"
+            desc = libraryDesc
             released = new Date()
             vcsTag = libraryVersion
         }
@@ -98,15 +101,15 @@ publishing {
     publications {
         DateTimePicker(MavenPublication) {
             groupId 'com.gavincode'
-            artifactId 'datetimepicker'
+            artifactId libraryArtifact
             version libraryVersion
 
             artifact("$buildDir/outputs/aar/library-release.aar")
 
             pom.withXml {
                 def root = asNode()
-                root.appendNode('name', POM_NAME)
-                root.appendNode('description', POM_DESCRIPTION)
+                root.appendNode('name', libraryName)
+                root.appendNode('description', libraryDesc)
                 root.appendNode('url', siteUrl)
                 root.children().last() + pomConfig
             }
@@ -117,7 +120,7 @@ publishing {
 task publishDateTimePickerBintray(dependsOn:[':library:assemble',':library:generatePomFileForDateTimePickerPublication',':library:bintrayUpload']) {
     tasks.findByPath(':library:assemble').mustRunAfter ':library:clean'
     tasks.findByPath(':library:generatePomFileForDateTimePickerPublication').mustRunAfter ':library:assemble'
-    tasks.findByPath(':library:generatePomFileForDateTimePickerPublication').mustRunAfter ':library:bintrayUpload'
+    tasks.findByPath(':library:bintrayUpload').mustRunAfter ':library:generatePomFileForDateTimePickerPublication'
 }
 
 configure(publishDateTimePickerBintray) {

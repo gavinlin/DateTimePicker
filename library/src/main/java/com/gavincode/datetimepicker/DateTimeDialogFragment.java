@@ -34,7 +34,8 @@ public class DateTimeDialogFragment extends DialogFragment {
     public static final String TAG_DATE_TIME_DIALOG_FRAGMENT = "tagDateTimeDialogFragment";
     private static final int SECONDS_OF_DAY = 86400;
 
-    private static DateTimePickerListener mListener;
+    private static OnDateTimeSetListener onDateTimeSetListener;
+    private static OnDateTimeCancelListener onDateTimeCancelListener;
 
     private Button mOkButton;
     private Button mCancelButton;
@@ -51,8 +52,10 @@ public class DateTimeDialogFragment extends DialogFragment {
     private TimePicker mTimePicker;
     private LocalDate epoch = LocalDate.ofEpochDay(0);
 
-    public static DateTimeDialogFragment newInstance(DateTimePickerListener listener, Date initialDate, Date minDate, Date maxDate) {
-        mListener = listener;
+    public static DateTimeDialogFragment newInstance(OnDateTimeSetListener setListener, OnDateTimeCancelListener cancelListener,
+                                                     Date initialDate, Date minDate, Date maxDate) {
+        onDateTimeSetListener = setListener;
+        onDateTimeCancelListener = cancelListener;
 
         DateTimeDialogFragment  dateTimeDialogFragment = new DateTimeDialogFragment();
 
@@ -147,7 +150,7 @@ public class DateTimeDialogFragment extends DialogFragment {
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mListener.onDateTimeCancel();
+                onDateTimeCancelListener.onDateTimeCancel();
             }
         });
 
@@ -156,7 +159,7 @@ public class DateTimeDialogFragment extends DialogFragment {
             public void onClick(View v) {
                 long secondOfDate = (long)mDatePicker.getValue() * SECONDS_OF_DAY;
                 ZonedDateTime zonedDate = Instant.ofEpochSecond(secondOfDate).atZone(ZoneId.systemDefault());
-                mListener.onDateTimeSet(zonedDate.withHour(mTimePicker.getCurrentHour()).withMinute(mTimePicker.getCurrentMinute()).toEpochSecond());
+                onDateTimeSetListener.onDateTimeSet(zonedDate.withHour(mTimePicker.getCurrentHour()).withMinute(mTimePicker.getCurrentMinute()).toEpochSecond());
             }
         });
 
