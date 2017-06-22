@@ -3,7 +3,7 @@ plugins {
 }
 
 ext {
-    libraryVersion = "0.2.1"
+    libraryVersion = "0.3.0"
     libraryName = 'datetimepicker'
     libraryArtifact = 'datetimepicker'
     libraryDesc = "Date time picker for android"
