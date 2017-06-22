@@ -5,5 +5,5 @@ package com.gavincode.datetimepicker;
  */
 
 public interface OnDateTimeSetListener {
-    void onDateTimeSet(long seconds);
+    void onDateTimeSet(long seconds, DateTimeDialogFragment dateTimeDialogFragment);
 }

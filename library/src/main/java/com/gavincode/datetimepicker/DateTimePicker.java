@@ -1,9 +1,7 @@
 package com.gavincode.datetimepicker;
 
 
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -13,78 +11,6 @@ import java.util.Date;
  */
 
 public class DateTimePicker {
-    private Date mInitialDate;
-    private Date mMinDate;
-    private Date mMaxDate;
-    private FragmentManager mFragmentManager;
-    private OnDateTimeSetListener mSetListener;
-    private OnDateTimeCancelListener mCancelListener;
-
-    private DateTimePicker(FragmentManager fm) {
-        FragmentTransaction ft = fm.beginTransaction();
-        Fragment prev = fm.findFragmentByTag(DateTimeDialogFragment.TAG_DATE_TIME_DIALOG_FRAGMENT) ;
-        if (prev != null) {
-            ft.remove(prev);
-            ft.commit();
-        }
-        mFragmentManager = fm;
-    }
-
-    public void setSetListener(OnDateTimeSetListener listener) {
-        this.mSetListener = listener;
-    }
-
-    public void setCancelListener(OnDateTimeCancelListener listener) {
-        this.mCancelListener = listener;
-    }
-
-    public void setInitialDate(Date initialDate) {
-        this.mInitialDate  = initialDate;
-    }
-
-    public void setMinDate(Date minDate) {
-        this.mMinDate = minDate;
-    }
-
-    public void setMaxDate(Date maxDate) {
-        this.mMaxDate = maxDate;
-    }
-
-    public void show() {
-        if (mSetListener == null)
-            throw new NullPointerException("SetListener can not be null");
-        if (mCancelListener == null)
-            throw new NullPointerException("CancelListener can not be null");
-
-        if (mInitialDate == null) {
-            setInitialDate(new Date());
-        }
-
-        if (mMinDate == null) {
-            Date epoch = new Date();
-            epoch.setTime(0);
-            setMinDate(epoch);
-        }
-
-        if (mMaxDate == null) {
-            Calendar calendar = Calendar.getInstance();
-            calendar.set(2100, 11, 31);
-            setMaxDate(calendar.getTime());
-        }
-
-
-        DateTimeDialogFragment dateTimeDialogFragment =
-                DateTimeDialogFragment.newInstance(
-                        mSetListener,
-                        mCancelListener,
-                        mInitialDate,
-                        mMinDate,
-                        mMaxDate
-                );
-
-        dateTimeDialogFragment.show(mFragmentManager,
-                DateTimeDialogFragment.TAG_DATE_TIME_DIALOG_FRAGMENT);
-    }
 
     public static class Builder {
         private FragmentManager fm;
@@ -124,14 +50,32 @@ public class DateTimePicker {
             return this;
         }
 
-        public DateTimePicker build() {
-            DateTimePicker picker = new DateTimePicker(fm);
-            picker.setSetListener(setListener);
-            picker.setCancelListener(cancelListener);
-            picker.setInitialDate(initialDate);
-            picker.setMinDate(minDate);
-            picker.setMinDate(maxDate);
-            return picker;
+        public DateTimeDialogFragment build() {
+            if (setListener == null)
+                throw new NullPointerException("SetListener can not be null");
+            if (cancelListener == null)
+                throw new NullPointerException("CancelListener can not be null");
+            DateTimeDialogFragment dateTimeDialogFragment = new DateTimeDialogFragment();
+            DateTimeController controller = new DateTimeController(fm);
+            controller.setDateTimeDialogFragment(dateTimeDialogFragment);
+            controller.setSetListener(setListener);
+            controller.setCancelListener(cancelListener);
+            controller.setInitialDate(initialDate);
+            if (minDate == null) {
+                Date epoch = new Date();
+                epoch.setTime(0);
+                setMinDate(epoch);
+            }
+            controller.setMinDate(minDate);
+
+            if (maxDate == null) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(2100, 11, 31);
+                setMaxDate(calendar.getTime());
+            }
+            controller.setMaxDate(maxDate);
+            dateTimeDialogFragment.setDateTimeController(controller);
+            return dateTimeDialogFragment;
         }
     }
 }

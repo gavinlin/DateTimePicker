@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
+import com.gavincode.datetimepicker.DateTimeDialogFragment;
 import com.gavincode.datetimepicker.DateTimePicker;
 import com.gavincode.datetimepicker.OnDateTimeCancelListener;
 import com.gavincode.datetimepicker.OnDateTimeSetListener;
@@ -23,21 +24,21 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         AndroidThreeTen.init(this);
         setContentView(R.layout.activity_main);
-        DateTimePicker picker = new DateTimePicker.Builder(getSupportFragmentManager())
+        DateTimeDialogFragment picker = new DateTimePicker.Builder(getSupportFragmentManager())
                 .setInitialDate(new Date())
                 .setSetListener(new OnDateTimeSetListener() {
                     @Override
-                    public void onDateTimeSet(long seconds) {
+                    public void onDateTimeSet(long seconds, DateTimeDialogFragment dialogFragment) {
                         DateTimeFormatter format = DateTimeFormatter.ofPattern("MMM d yyyy  hh:mm a");
                         ZonedDateTime zonedDate = Instant.ofEpochSecond(seconds).atZone(ZoneId.systemDefault());
-
+                        dialogFragment.dismiss();
                         Log.i("result", zonedDate.format(format));
                     }
                 })
                 .setCancelListener(new OnDateTimeCancelListener() {
                     @Override
-                    public void onDateTimeCancel() {
-
+                    public void onDateTimeCancel(DateTimeDialogFragment dialogFragment) {
+                        dialogFragment.dismiss();
                     }
                 })
                 .build();

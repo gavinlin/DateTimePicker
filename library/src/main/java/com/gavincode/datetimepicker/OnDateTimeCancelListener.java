@@ -5,5 +5,5 @@ package com.gavincode.datetimepicker;
  */
 
 public interface OnDateTimeCancelListener {
-    void onDateTimeCancel();
+    void onDateTimeCancel(DateTimeDialogFragment dateTimeDialogFragment);
 }

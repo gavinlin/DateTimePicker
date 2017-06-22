@@ -34,9 +34,6 @@ public class DateTimeDialogFragment extends DialogFragment {
     public static final String TAG_DATE_TIME_DIALOG_FRAGMENT = "tagDateTimeDialogFragment";
     private static final int SECONDS_OF_DAY = 86400;
 
-    private static OnDateTimeSetListener onDateTimeSetListener;
-    private static OnDateTimeCancelListener onDateTimeCancelListener;
-
     private Button mOkButton;
     private Button mCancelButton;
     private Button mTodayButton;
@@ -51,21 +48,18 @@ public class DateTimeDialogFragment extends DialogFragment {
     private NumberPicker mDatePicker;
     private TimePicker mTimePicker;
     private LocalDate epoch = LocalDate.ofEpochDay(0);
+    private DateTimeController mDateTimeController;
 
-    public static DateTimeDialogFragment newInstance(OnDateTimeSetListener setListener, OnDateTimeCancelListener cancelListener,
-                                                     Date initialDate, Date minDate, Date maxDate) {
-        onDateTimeSetListener = setListener;
-        onDateTimeCancelListener = cancelListener;
-
-        DateTimeDialogFragment  dateTimeDialogFragment = new DateTimeDialogFragment();
-
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("initialDate", initialDate);
-        bundle.putSerializable("minDate", minDate);
-        bundle.putSerializable("maxDate", maxDate);
-        dateTimeDialogFragment.setArguments(bundle);
-
+    public static DateTimeDialogFragment newInstance() {
+        DateTimeDialogFragment dateTimeDialogFragment = new DateTimeDialogFragment();
         return dateTimeDialogFragment;
+    }
+
+    public void setDateTimeController(DateTimeController controller) {
+        this.mDateTimeController = controller;
+        mInitialDate = mDateTimeController.getInitialDate();
+        mMaxDate = mDateTimeController.getMaxDate();
+        mMinDate = mDateTimeController.getMinDate();
     }
 
     @Override
@@ -73,15 +67,6 @@ public class DateTimeDialogFragment extends DialogFragment {
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
         AndroidThreeTen.init(getContext());
-        getBundleValues();
-
-    }
-
-    private void getBundleValues() {
-        Bundle args = getArguments();
-        mInitialDate = (Date) args.getSerializable("initialDate");
-        mMinDate = (Date) args.getSerializable("minDate");
-        mMaxDate = (Date) args.getSerializable("maxDate");
     }
 
     @Nullable
@@ -150,7 +135,7 @@ public class DateTimeDialogFragment extends DialogFragment {
         mCancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onDateTimeCancelListener.onDateTimeCancel();
+                mDateTimeController.onDateTimeCancel(DateTimeDialogFragment.this);
             }
         });
 
@@ -159,7 +144,8 @@ public class DateTimeDialogFragment extends DialogFragment {
             public void onClick(View v) {
                 long secondOfDate = (long)mDatePicker.getValue() * SECONDS_OF_DAY;
                 ZonedDateTime zonedDate = Instant.ofEpochSecond(secondOfDate).atZone(ZoneId.systemDefault());
-                onDateTimeSetListener.onDateTimeSet(zonedDate.withHour(mTimePicker.getCurrentHour()).withMinute(mTimePicker.getCurrentMinute()).toEpochSecond());
+                mDateTimeController.onDateTimeSet(zonedDate.withHour(mTimePicker.getCurrentHour()).withMinute(mTimePicker.getCurrentMinute()).toEpochSecond(),
+                        DateTimeDialogFragment.this);
             }
         });
 
@@ -185,5 +171,9 @@ public class DateTimeDialogFragment extends DialogFragment {
         mTimePicker = (TimePicker) v.findViewById(R.id.picker_time);
         mDatePicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
         mTimePicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+    }
+
+    public void show() {
+        mDateTimeController.show();
     }
 }
