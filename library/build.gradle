@@ -1,0 +1,125 @@
+plugins {
+    id "com.jfrog.bintray" version "1.7.3"
+}
+
+ext {
+    libraryVersion = "0.1.0"
+
+    siteUrl = ""
+    gitUrl = ""
+
+    developerId = "gavin"
+    developerName = "gavin"
+    developerEmail = "gavinlin.au@gmail.com"
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "26.0.0"
+
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 25
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    implementation 'com.android.support:appcompat-v7:25.4.0'
+    compile 'com.android.support:support-v4:25.4.0'
+    compile 'com.jakewharton.threetenabp:threetenabp:1.0.5'
+    testImplementation 'junit:junit:4.12'
+}
+
+
+// Create the pom configuration:
+def pomConfig = {
+    licenses {
+        license {
+            name licenseName
+            url licenseUrl
+            distribution "repo"
+        }
+    }
+    developers {
+        developer {
+            id developerId
+            name developerName
+            email developerEmail
+        }
+    }
+}
+
+bintray {
+    user = bintrayUser
+    key = bintrayApiKey
+    publications = ['DateTimePicker']
+
+    pkg {
+        repo = 'android'
+        name = 'datetimepicker'
+        userOrg = 'gavinlinau'
+        licenses = allLicenses
+        vcsUrl = gitUrl
+
+        version {
+            name = libraryVersion
+            desc = "Date time picker for android"
+            released = new Date()
+            vcsTag = libraryVersion
+        }
+    }
+}
+
+publishing {
+    publications {
+        DateTimePicker(MavenPublication) {
+            groupId 'com.gavincode'
+            artifactId 'datetimepicker'
+            version libraryVersion
+
+            artifact("$buildDir/outputs/aar/library-release.aar")
+
+            pom.withXml {
+                def root = asNode()
+                root.appendNode('name', POM_NAME)
+                root.appendNode('description', POM_DESCRIPTION)
+                root.appendNode('url', siteUrl)
+                root.children().last() + pomConfig
+            }
+        }
+    }
+}
+
+task publishDateTimePickerBintray(dependsOn:[':library:assemble',':library:generatePomFileForDateTimePickerPublication',':library:bintrayUpload']) {
+    tasks.findByPath(':library:assemble').mustRunAfter ':library:clean'
+    tasks.findByPath(':library:generatePomFileForDateTimePickerPublication').mustRunAfter ':library:assemble'
+    tasks.findByPath(':library:generatePomFileForDateTimePickerPublication').mustRunAfter ':library:bintrayUpload'
+}
+
+configure(publishDateTimePickerBintray) {
+    group = 'bintray'
+}

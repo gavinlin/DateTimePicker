@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">DateTimePicker</string>
+    <string name="clear">clear</string>
+    <string name="today">today</string>
+    <string name="ok">ok</string>
+    <string name="plus_one_week">+ 1 week</string>
+    <string name="plus_one_month">+ 1 month</string>
+    <string name="plus_one_year">+ 1 year</string>
+</resources>
