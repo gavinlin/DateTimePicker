@@ -92,7 +92,7 @@ public class DateTimeDialogFragment extends DialogFragment {
             public String format(int value) {
                 Instant instant = Instant.ofEpochSecond((long)value * SECONDS_OF_DAY);
                 LocalDateTime zonedDateTime = ZonedDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalDateTime();
-                return zonedDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                return zonedDateTime.format(DateTimeFormatter.ofPattern("EEE-MM-dd"));
             }
         });
 

@@ -3,10 +3,11 @@ plugins {
 }
 
 ext {
-    libraryVersion = "0.3.0"
+    libraryVersion = "0.3.3"
     libraryName = 'datetimepicker'
     libraryArtifact = 'datetimepicker'
     libraryDesc = "Date time picker for android"
+    bintrayGroupId = 'com.gavincode'
 
     siteUrl = "https://github.com/gavinlin/DateTimePicker.git"
     gitUrl = "https://github.com/gavinlin/DateTimePicker.git"
@@ -22,6 +23,9 @@ ext {
 
 apply plugin: 'com.android.library'
 apply plugin: 'maven-publish'
+
+group = bintrayGroupId
+version = libraryVersion
 
 android {
     compileSdkVersion 25
@@ -76,9 +80,30 @@ def pomConfig = {
     }
 }
 
+task generateSourcesJar(type: Jar) {
+    classifier = 'sources'
+    from android.sourceSets.main.java.srcDirs
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives generateSourcesJar
+    archives javadocJar
+}
+
 bintray {
     user = bintrayUser
     key = bintrayApiKey
+    configurations = ['archives']
     publications = ['DateTimePicker']
 
     pkg {
@@ -100,11 +125,9 @@ bintray {
 publishing {
     publications {
         DateTimePicker(MavenPublication) {
-            groupId 'com.gavincode'
+            groupId bintrayGroupId
             artifactId libraryArtifact
             version libraryVersion
-
-            artifact("$buildDir/outputs/aar/library-release.aar")
 
             pom.withXml {
                 def root = asNode()
@@ -112,15 +135,25 @@ publishing {
                 root.appendNode('description', libraryDesc)
                 root.appendNode('url', siteUrl)
                 root.children().last() + pomConfig
+                def dependenciesNode = root.appendNode('dependencies')
+
+                configurations.compile.allDependencies.each { dependency ->
+                    def dependencyNode = dependenciesNode.appendNode('dependency')
+                    dependencyNode.appendNode('groupId', dependency.group)
+                    dependencyNode.appendNode('artifactId', dependency.name)
+                    dependencyNode.appendNode('version', dependency.version)
+                }
+                //Iterate over the compile dependencies (we don't want the test ones), adding a <dependency> node for each
             }
         }
     }
 }
 
-task publishDateTimePickerBintray(dependsOn:[':library:assemble',':library:generatePomFileForDateTimePickerPublication',':library:bintrayUpload']) {
-    tasks.findByPath(':library:assemble').mustRunAfter ':library:clean'
-    tasks.findByPath(':library:generatePomFileForDateTimePickerPublication').mustRunAfter ':library:assemble'
-    tasks.findByPath(':library:bintrayUpload').mustRunAfter ':library:generatePomFileForDateTimePickerPublication'
+
+task publishDateTimePickerBintray(dependsOn:[':datetimepicker:assemble',':datetimepicker:generatePomFileForDateTimePickerPublication',':datetimepicker:bintrayUpload']) {
+    tasks.findByPath(':datetimepicker:assemble').mustRunAfter ':datetimepicker:clean'
+    tasks.findByPath(':datetimepicker:generatePomFileForDateTimePickerPublication').mustRunAfter ':datetimepicker:assemble'
+    tasks.findByPath(':datetimepicker:bintrayUpload').mustRunAfter ':datetimepicker:generatePomFileForDateTimePickerPublication'
 }
 
 configure(publishDateTimePickerBintray) {
